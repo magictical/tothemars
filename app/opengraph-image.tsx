@@ -9,14 +9,26 @@ export const size = {
 
 export const contentType = "image/png";
 
+// Get the base URL for image
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "https://mars-landing-page-aey0t2ube-ians-projects-2d2fd58b.vercel.app";
+};
+
 // Image generation
 export default async function Image() {
+  const baseUrl = getBaseUrl();
+  const starshipImageUrl = `${baseUrl}/starship.png`;
+
   return new ImageResponse(
     (
       <div
         style={{
-          fontSize: 60,
-          background: "linear-gradient(to bottom, #1a1d2b, #0a0d1a)",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -26,7 +38,21 @@ export default async function Image() {
           position: "relative",
         }}
       >
-        {/* Background Pattern */}
+        {/* Background Image */}
+        <img
+          src={starshipImageUrl}
+          alt="Starship"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+        />
+
+        {/* Dark Overlay for better text readability */}
         <div
           style={{
             position: "absolute",
@@ -35,7 +61,7 @@ export default async function Image() {
             right: 0,
             bottom: 0,
             background:
-              "radial-gradient(circle at 50% 50%, rgba(168, 51, 46, 0.2) 0%, transparent 70%)",
+              "linear-gradient(to bottom, rgba(26, 29, 43, 0.7), rgba(10, 13, 26, 0.85))",
           }}
         />
 
@@ -46,18 +72,18 @@ export default async function Image() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: "80px",
+            padding: "60px",
             zIndex: 1,
             textAlign: "center",
           }}
         >
           <div
             style={{
-              fontSize: 24,
+              fontSize: 22,
               color: "#a8332e",
               fontWeight: "bold",
-              marginBottom: 20,
-              letterSpacing: "0.1em",
+              marginBottom: 16,
+              letterSpacing: "0.15em",
               textTransform: "uppercase",
             }}
           >
@@ -65,31 +91,34 @@ export default async function Image() {
           </div>
           <div
             style={{
-              fontSize: 72,
+              fontSize: 64,
               fontWeight: "bold",
               color: "#ffffff",
-              marginBottom: 30,
+              marginBottom: 24,
               lineHeight: 1.2,
+              textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
             }}
           >
             Humanity's Next Step
           </div>
           <div
             style={{
-              fontSize: 72,
+              fontSize: 64,
               fontWeight: "bold",
               color: "#a8332e",
-              marginBottom: 40,
+              marginBottom: 32,
+              textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
             }}
           >
             Starts on Mars
           </div>
           <div
             style={{
-              fontSize: 28,
-              color: "#cccccc",
-              maxWidth: 900,
-              lineHeight: 1.5,
+              fontSize: 24,
+              color: "#e0e0e0",
+              maxWidth: 850,
+              lineHeight: 1.4,
+              textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
             }}
           >
             Join the Mars migration project led by Elon Musk. Secure your place
