@@ -6,16 +6,18 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 const geistMono = Geist_Mono({ subsets: ["latin"] });
 
-// Get the base URL from environment variable or use default
-// For Vercel deployments, use VERCEL_URL or NEXT_PUBLIC_BASE_URL
-// Fallback to a default production URL if neither is set
-const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL ||
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.NEXT_PUBLIC_VERCEL_URL
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : "https://mars-landing-page-aey0t2ube-ians-projects-2d2fd58b.vercel.app");
+// Get the base URL dynamically at runtime for metadataBase
+// This ensures the correct URL is used regardless of build-time vs runtime differences
+function getBaseUrl(): string {
+  // In production, use environment variables or headers
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL;
+  }
+  // Fallback to a default production URL
+  return "https://mars-landing-page-aey0t2ube-ians-projects-2d2fd58b.vercel.app";
+}
+
+const baseUrl = getBaseUrl();
 
 export const metadata: Metadata = {
   title: {
@@ -44,6 +46,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  // Use metadataBase with relative URLs - Next.js will convert them to absolute URLs
   metadataBase: new URL(baseUrl),
   alternates: {
     canonical: "/",
@@ -63,7 +66,7 @@ export const metadata: Metadata = {
       "Join the Mars migration project led by Elon Musk. Secure your place in history as one of the first settlers on the Red Planet. Apply now for the most important journey of your life.",
     images: [
       {
-        url: `${baseUrl}/starship.png`, // Use absolute URL for Open Graph crawlers
+        url: "/starship.png", // Use relative path - metadataBase will convert to absolute URL
         width: 1200,
         height: 630,
         alt: "Mars Migration Project - Join Humanity's Journey to Mars",
@@ -78,7 +81,7 @@ export const metadata: Metadata = {
       "Join the Mars migration project led by Elon Musk. Secure your place in history as one of the first settlers on the Red Planet. Apply now for the most important journey of your life.",
     images: [
       {
-        url: `${baseUrl}/starship.png`, // Use absolute URL for Open Graph crawlers
+        url: "/starship.png", // Use relative path - metadataBase will convert to absolute URL
         alt: "Mars Migration Project - Join Humanity's Journey to Mars",
       },
     ],
