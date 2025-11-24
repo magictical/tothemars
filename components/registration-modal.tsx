@@ -36,14 +36,29 @@ export function RegistrationModal({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    console.log("🔄 Form submission started");
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
+    
+    // Log form data before submission
+    const formDataObj: Record<string, string> = {};
+    formData.forEach((value, key) => {
+      formDataObj[key] = value.toString();
+    });
+    console.log("📋 Form data being submitted:", formDataObj);
+    console.log("Form data entries:", Array.from(formData.entries()));
+
     const result = await submitToNotion(formData);
+
+    console.log("📬 Server response:", result);
 
     setIsLoading(false);
     if (result.success) {
+      console.log("✅ Form submission successful!");
       setIsSuccess(true);
+    } else {
+      console.error("❌ Form submission failed:", result.message);
     }
   }
 

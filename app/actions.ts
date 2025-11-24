@@ -8,27 +8,45 @@ interface SubmitResult {
 export async function submitToNotion(
   formData: FormData
 ): Promise<SubmitResult> {
+  console.log("=== Form Submission Started ===");
+  
+  // Extract form data
   const name = formData.get("name")?.toString().trim();
   const email = formData.get("email")?.toString().trim();
   const desc = formData.get("desc")?.toString().trim();
 
+  console.log("Form data extracted:", {
+    name: name || "(empty)",
+    email: email || "(empty)",
+    desc: desc || "(empty)",
+    descLength: desc?.length || 0,
+  });
+
   // Validate input
   if (!name || !email) {
+    console.error("Validation failed: Name or email is missing");
     return { success: false, message: "Name and email are required" };
   }
 
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
+    console.error("Validation failed: Invalid email format");
     return { success: false, message: "Please enter a valid email address" };
   }
 
   const NOTION_API_KEY = process.env.NOTION_API_KEY;
   const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID;
 
+  console.log("Environment variables:", {
+    hasApiKey: !!NOTION_API_KEY,
+    hasDatabaseId: !!NOTION_DATABASE_ID,
+    databaseIdLength: NOTION_DATABASE_ID?.length || 0,
+  });
+
   // Check if environment variables are set
   if (!NOTION_API_KEY || !NOTION_DATABASE_ID) {
-    console.error("Notion API credentials are missing");
+    console.error("❌ Notion API credentials are missing");
     return {
       success: false,
       message: "Server configuration error. Please contact support.",
@@ -36,6 +54,7 @@ export async function submitToNotion(
   }
 
   try {
+    console.log("📡 Fetching database properties...");
     // 먼저 데이터베이스의 속성 정보를 가져와서 실제 속성명 확인
     const dbResponse = await fetch(
       `https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}`,
@@ -48,9 +67,15 @@ export async function submitToNotion(
       }
     );
 
+    console.log("Database fetch response status:", dbResponse.status, dbResponse.statusText);
+
     if (!dbResponse.ok) {
       const errorData = await dbResponse.json().catch(() => ({}));
-      console.error("Failed to fetch database properties:", errorData);
+      console.error("❌ Failed to fetch database properties:", {
+        status: dbResponse.status,
+        statusText: dbResponse.statusText,
+        error: errorData,
+      });
       return {
         success: false,
         message: "Failed to access database. Please check database ID.",
@@ -59,7 +84,18 @@ export async function submitToNotion(
 
     const dbData = await dbResponse.json();
     const properties = dbData.properties;
+    
+    console.log("✅ Database properties fetched:", {
+      totalProperties: Object.keys(properties).length,
+      propertyNames: Object.keys(properties),
+      propertyDetails: Object.keys(properties).map(key => ({
+        key,
+        type: properties[key].type,
+      })),
+    });
 
+    console.log("🔍 Matching properties...");
+    
     // 속성명 찾기 (대소문자 구분 없이 찾기)
     const namePropertyKey = Object.keys(properties).find(
       (key) =>
@@ -76,16 +112,24 @@ export async function submitToNotion(
     );
 
     // desc 속성 찾기: 키 이름을 우선으로 찾고, 그 다음 타입 확인
-    const descPropertyKey = Object.keys(properties).find(
-      (key) =>
-        key.toLowerCase() === "desc" ||
-        key.toLowerCase() === "description" ||
-        key.toLowerCase() === "설명" ||
-        key.toLowerCase() === "comment" ||
-        key.toLowerCase() === "코멘트"
-    ) || Object.keys(properties).find(
-      (key) => properties[key].type === "rich_text"
-    );
+    const descPropertyKey =
+      Object.keys(properties).find(
+        (key) =>
+          key.toLowerCase() === "desc" ||
+          key.toLowerCase() === "description" ||
+          key.toLowerCase() === "설명" ||
+          key.toLowerCase() === "comment" ||
+          key.toLowerCase() === "코멘트"
+      ) ||
+      Object.keys(properties).find(
+        (key) => properties[key].type === "rich_text"
+      );
+
+    console.log("Property matching results:", {
+      namePropertyKey: namePropertyKey || "❌ NOT FOUND",
+      emailPropertyKey: emailPropertyKey || "❌ NOT FOUND",
+      descPropertyKey: descPropertyKey || "❌ NOT FOUND",
+    });
 
     if (!namePropertyKey) {
       console.error("Available properties:", Object.keys(properties));
@@ -167,9 +211,23 @@ export async function submitToNotion(
     }
 
     // desc 속성 설정 (값이 있는 경우)
+    console.log("📝 Setting desc property...", {
+      hasDescValue: !!desc,
+      descValue: desc || "(empty)",
+      descValueLength: desc?.length || 0,
+      hasDescPropertyKey: !!descPropertyKey,
+      hasDescProperty: !!descProperty,
+    });
+
     if (desc) {
       if (descPropertyKey && descProperty) {
         // desc 속성이 찾아진 경우
+        console.log("✅ Desc property found:", {
+          key: descPropertyKey,
+          type: descProperty.type,
+          value: desc,
+        });
+
         if (descProperty.type === "rich_text") {
           propertiesPayload[descPropertyKey] = {
             rich_text: [
@@ -182,6 +240,7 @@ export async function submitToNotion(
           };
         } else {
           // 다른 타입이어도 rich_text로 시도 (Notion API는 rich_text를 기본으로 사용)
+          console.warn(`⚠️ Desc property type is "${descProperty.type}", using rich_text format`);
           propertiesPayload[descPropertyKey] = {
             rich_text: [
               {
@@ -192,27 +251,37 @@ export async function submitToNotion(
             ],
           };
         }
-        console.log("Desc property found and set:", {
-          key: descPropertyKey,
-          type: descProperty.type,
-          value: desc,
-        });
+        console.log("✅ Desc property set in payload:", propertiesPayload[descPropertyKey]);
       } else {
         // desc 속성을 찾지 못한 경우 - 모든 속성 로그 출력
-        console.warn("Desc property not found. Available properties:", Object.keys(properties).map(key => ({
+        console.error("❌ Desc property not found!");
+        console.error("Available properties:", Object.keys(properties).map((key) => ({
           key,
-          type: properties[key].type
+          type: properties[key].type,
         })));
-        console.warn("Desc value:", desc);
+        console.error("Desc value that should be saved:", desc);
+        console.error("This means desc will NOT be saved to Notion DB!");
       }
+    } else {
+      console.log("ℹ️ No desc value provided, skipping desc property");
     }
 
-    console.log("Using properties:", {
+    console.log("📦 Final payload:", {
       nameProperty: namePropertyKey,
       emailProperty: emailPropertyKey,
       descProperty: descPropertyKey,
       payload: propertiesPayload,
+      payloadKeys: Object.keys(propertiesPayload),
     });
+
+    console.log("🚀 Sending request to Notion API...");
+    const requestBody = {
+      parent: {
+        database_id: NOTION_DATABASE_ID,
+      },
+      properties: propertiesPayload,
+    };
+    console.log("Request body:", JSON.stringify(requestBody, null, 2));
 
     const response = await fetch("https://api.notion.com/v1/pages", {
       method: "POST",
@@ -221,20 +290,22 @@ export async function submitToNotion(
         "Content-Type": "application/json",
         "Notion-Version": "2022-06-28",
       },
-      body: JSON.stringify({
-        parent: {
-          database_id: NOTION_DATABASE_ID,
-        },
-        properties: propertiesPayload,
-      }),
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log("📡 Notion API response:", {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error("Notion API error:", {
+      console.error("❌ Notion API error:", {
         status: response.status,
         statusText: response.statusText,
         error: errorData,
+        fullError: JSON.stringify(errorData, null, 2),
       });
 
       // Handle specific error cases
@@ -267,11 +338,22 @@ export async function submitToNotion(
     }
 
     const data = await response.json();
-    console.log("Successfully submitted to Notion:", data.id);
+    console.log("✅ Successfully submitted to Notion!");
+    console.log("Response data:", {
+      pageId: data.id,
+      url: data.url,
+      createdTime: data.created_time,
+    });
+    console.log("=== Form Submission Completed Successfully ===");
 
     return { success: true, message: "Successfully registered" };
   } catch (error) {
-    console.error("Notion submission error:", error);
+    console.error("❌ Notion submission error:", error);
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    console.log("=== Form Submission Failed ===");
     return {
       success: false,
       message: "Network error. Please check your connection and try again.",
