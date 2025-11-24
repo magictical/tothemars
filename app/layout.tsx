@@ -66,7 +66,7 @@ export const metadata: Metadata = {
       "Join the Mars migration project led by Elon Musk. Secure your place in history as one of the first settlers on the Red Planet. Apply now for the most important journey of your life.",
     images: [
       {
-        url: "/starship.png", // Use relative path - metadataBase will convert to absolute URL
+        url: "/opengraph-image", // Use Next.js file-based metadata - automatically generates correct URL
         width: 1200,
         height: 630,
         alt: "Mars Migration Project - Join Humanity's Journey to Mars",
@@ -81,7 +81,7 @@ export const metadata: Metadata = {
       "Join the Mars migration project led by Elon Musk. Secure your place in history as one of the first settlers on the Red Planet. Apply now for the most important journey of your life.",
     images: [
       {
-        url: "/starship.png", // Use relative path - metadataBase will convert to absolute URL
+        url: "/opengraph-image", // Use Next.js file-based metadata - automatically generates correct URL
         alt: "Mars Migration Project - Join Humanity's Journey to Mars",
       },
     ],
