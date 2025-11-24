@@ -75,12 +75,16 @@ export async function submitToNotion(
         key.toLowerCase() === "이메일"
     );
 
+    // desc 속성 찾기: 키 이름을 우선으로 찾고, 그 다음 타입 확인
     const descPropertyKey = Object.keys(properties).find(
       (key) =>
-        properties[key].type === "rich_text" ||
         key.toLowerCase() === "desc" ||
         key.toLowerCase() === "description" ||
-        key.toLowerCase() === "설명"
+        key.toLowerCase() === "설명" ||
+        key.toLowerCase() === "comment" ||
+        key.toLowerCase() === "코멘트"
+    ) || Object.keys(properties).find(
+      (key) => properties[key].type === "rich_text"
     );
 
     if (!namePropertyKey) {
@@ -162,39 +166,44 @@ export async function submitToNotion(
       };
     }
 
-    // desc 속성 설정 (텍스트 형식)
-    if (descPropertyKey && desc) {
-      if (descProperty.type === "rich_text") {
-        propertiesPayload[descPropertyKey] = {
-          rich_text: [
-            {
-              text: {
-                content: desc,
+    // desc 속성 설정 (값이 있는 경우)
+    if (desc) {
+      if (descPropertyKey && descProperty) {
+        // desc 속성이 찾아진 경우
+        if (descProperty.type === "rich_text") {
+          propertiesPayload[descPropertyKey] = {
+            rich_text: [
+              {
+                text: {
+                  content: desc,
+                },
               },
-            },
-          ],
-        };
-      } else if (descProperty.type === "title") {
-        propertiesPayload[descPropertyKey] = {
-          title: [
-            {
-              text: {
-                content: desc,
+            ],
+          };
+        } else {
+          // 다른 타입이어도 rich_text로 시도 (Notion API는 rich_text를 기본으로 사용)
+          propertiesPayload[descPropertyKey] = {
+            rich_text: [
+              {
+                text: {
+                  content: desc,
+                },
               },
-            },
-          ],
-        };
+            ],
+          };
+        }
+        console.log("Desc property found and set:", {
+          key: descPropertyKey,
+          type: descProperty.type,
+          value: desc,
+        });
       } else {
-        // 다른 타입의 경우 rich_text로 처리
-        propertiesPayload[descPropertyKey] = {
-          rich_text: [
-            {
-              text: {
-                content: desc,
-              },
-            },
-          ],
-        };
+        // desc 속성을 찾지 못한 경우 - 모든 속성 로그 출력
+        console.warn("Desc property not found. Available properties:", Object.keys(properties).map(key => ({
+          key,
+          type: properties[key].type
+        })));
+        console.warn("Desc value:", desc);
       }
     }
 
