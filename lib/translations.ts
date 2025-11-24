@@ -121,6 +121,8 @@ export const translations = {
       namePlaceholder: "Elon Musk",
       emailLabel: "Email Address",
       emailPlaceholder: "elon@spacex.com",
+      commentLabel: "Comment",
+      commentPlaceholder: "Tell us why you want to join the Mars migration...",
       submit: "Apply for Mars Migration",
       processing: "Processing...",
       success: {
@@ -247,6 +249,8 @@ export const translations = {
       namePlaceholder: "홍길동",
       emailLabel: "이메일 주소",
       emailPlaceholder: "hong@example.com",
+      commentLabel: "코멘트",
+      commentPlaceholder: "화성 이주에 참여하고 싶은 이유를 알려주세요...",
       submit: "화성 이주 신청하기",
       processing: "처리 중...",
       success: {

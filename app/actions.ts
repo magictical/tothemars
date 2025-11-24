@@ -10,6 +10,7 @@ export async function submitToNotion(
 ): Promise<SubmitResult> {
   const name = formData.get("name")?.toString().trim();
   const email = formData.get("email")?.toString().trim();
+  const desc = formData.get("desc")?.toString().trim();
 
   // Validate input
   if (!name || !email) {
@@ -74,6 +75,14 @@ export async function submitToNotion(
         key.toLowerCase() === "이메일"
     );
 
+    const descPropertyKey = Object.keys(properties).find(
+      (key) =>
+        properties[key].type === "rich_text" ||
+        key.toLowerCase() === "desc" ||
+        key.toLowerCase() === "description" ||
+        key.toLowerCase() === "설명"
+    );
+
     if (!namePropertyKey) {
       console.error("Available properties:", Object.keys(properties));
       return {
@@ -97,6 +106,7 @@ export async function submitToNotion(
     // 실제 속성명과 타입에 맞게 데이터 구성
     const nameProperty = properties[namePropertyKey];
     const emailProperty = properties[emailPropertyKey];
+    const descProperty = descPropertyKey ? properties[descPropertyKey] : null;
 
     const propertiesPayload: Record<string, any> = {};
 
@@ -152,9 +162,46 @@ export async function submitToNotion(
       };
     }
 
+    // desc 속성 설정 (텍스트 형식)
+    if (descPropertyKey && desc) {
+      if (descProperty.type === "rich_text") {
+        propertiesPayload[descPropertyKey] = {
+          rich_text: [
+            {
+              text: {
+                content: desc,
+              },
+            },
+          ],
+        };
+      } else if (descProperty.type === "title") {
+        propertiesPayload[descPropertyKey] = {
+          title: [
+            {
+              text: {
+                content: desc,
+              },
+            },
+          ],
+        };
+      } else {
+        // 다른 타입의 경우 rich_text로 처리
+        propertiesPayload[descPropertyKey] = {
+          rich_text: [
+            {
+              text: {
+                content: desc,
+              },
+            },
+          ],
+        };
+      }
+    }
+
     console.log("Using properties:", {
       nameProperty: namePropertyKey,
       emailProperty: emailPropertyKey,
+      descProperty: descPropertyKey,
       payload: propertiesPayload,
     });
 
