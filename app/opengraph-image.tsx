@@ -12,8 +12,9 @@ export const contentType = "image/png";
 
 export default async function Image() {
   try {
-    // Read the starship.png file from the public directory
-    const imagePath = join(process.cwd(), "public", "starship.png");
+    // Read the mars-surface-space-rocket-launch-cinematic-dark.jpg file from the public directory
+    // This image best represents the Mars migration project theme with cinematic impact
+    const imagePath = join(process.cwd(), "public", "mars-surface-space-rocket-launch-cinematic-dark.jpg");
     const imageBuffer = await readFile(imagePath);
     const base64Image = imageBuffer.toString("base64");
 
