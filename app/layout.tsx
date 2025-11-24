@@ -9,6 +9,13 @@ const greatVibes = Great_Vibes({
   variable: "--font-great-vibes",
 });
 
+// Get the base URL from environment variable or use default
+const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://mars-landing-page-aey0t2ube-ians-projects-2d2fd58b.vercel.app");
+
 export const metadata: Metadata = {
   title: {
     default: "Mars Migration Project - Join Humanity's Journey to Mars",
@@ -36,7 +43,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://mars-migration-project.com"),
+  metadataBase: new URL(baseUrl),
   alternates: {
     canonical: "/",
     languages: {
@@ -48,14 +55,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     alternateLocale: ["ko_KR"],
-    url: "https://mars-migration-project.com",
+    url: baseUrl,
     siteName: "Mars Migration Project",
     title: "Mars Migration Project - Join Humanity's Journey to Mars",
     description:
       "Join the Mars migration project led by Elon Musk. Secure your place in history as one of the first settlers on the Red Planet. Apply now for the most important journey of your life.",
     images: [
       {
-        url: "/starship.png",
+        url: `${baseUrl}/starship.png`,
         width: 1200,
         height: 630,
         alt: "Starship - Mars Migration Project",
@@ -70,7 +77,7 @@ export const metadata: Metadata = {
       "Join the Mars migration project led by Elon Musk. Secure your place in history as one of the first settlers on the Red Planet. Apply now for the most important journey of your life.",
     images: [
       {
-        url: "/starship.png",
+        url: `${baseUrl}/starship.png`,
         alt: "Starship - Mars Migration Project",
       },
     ],
