@@ -59,11 +59,10 @@ export const metadata: Metadata = {
       "Join the Mars migration project led by Elon Musk. Secure your place in history as one of the first settlers on the Red Planet. Apply now for the most important journey of your life.",
     images: [
       {
-        url: `${baseUrl}/starship.png`,
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Starship - Mars Migration Project",
-        type: "image/png",
+        alt: "Mars Migration Project - Join Humanity's Journey to Mars",
       },
     ],
   },
@@ -74,8 +73,8 @@ export const metadata: Metadata = {
       "Join the Mars migration project led by Elon Musk. Secure your place in history as one of the first settlers on the Red Planet. Apply now for the most important journey of your life.",
     images: [
       {
-        url: `${baseUrl}/starship.png`,
-        alt: "Starship - Mars Migration Project",
+        url: "/opengraph-image",
+        alt: "Mars Migration Project - Join Humanity's Journey to Mars",
       },
     ],
     creator: "@MarsMigration",
