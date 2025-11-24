@@ -13,8 +13,8 @@ function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_BASE_URL) {
     return process.env.NEXT_PUBLIC_BASE_URL;
   }
-  // Fallback to a default production URL
-  return "https://mars-landing-page-aey0t2ube-ians-projects-2d2fd58b.vercel.app";
+  // Use the actual deployed URL
+  return "https://mars-landing-page-ashy.vercel.app";
 }
 
 const baseUrl = getBaseUrl();
