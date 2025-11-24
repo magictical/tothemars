@@ -9,7 +9,7 @@ export async function submitToNotion(
   formData: FormData
 ): Promise<SubmitResult> {
   console.log("=== Form Submission Started ===");
-  
+
   // Extract form data
   const name = formData.get("name")?.toString().trim();
   const email = formData.get("email")?.toString().trim();
@@ -38,15 +38,26 @@ export async function submitToNotion(
   const NOTION_API_KEY = process.env.NOTION_API_KEY;
   const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID;
 
-  console.log("Environment variables:", {
+  console.log("🔐 Environment variables check:", {
     hasApiKey: !!NOTION_API_KEY,
     hasDatabaseId: !!NOTION_DATABASE_ID,
+    apiKeyLength: NOTION_API_KEY?.length || 0,
     databaseIdLength: NOTION_DATABASE_ID?.length || 0,
+    apiKeyPrefix: NOTION_API_KEY?.substring(0, 10) || "N/A",
+    databaseIdPrefix: NOTION_DATABASE_ID?.substring(0, 10) || "N/A",
+    nodeEnv: process.env.NODE_ENV,
   });
 
   // Check if environment variables are set
   if (!NOTION_API_KEY || !NOTION_DATABASE_ID) {
-    console.error("❌ Notion API credentials are missing");
+    console.error("❌ Notion API credentials are missing!");
+    console.error("Missing variables:", {
+      NOTION_API_KEY: !NOTION_API_KEY ? "❌ MISSING" : "✅ SET",
+      NOTION_DATABASE_ID: !NOTION_DATABASE_ID ? "❌ MISSING" : "✅ SET",
+    });
+    console.error("Please set environment variables:");
+    console.error("1. For Vercel: Go to Project Settings > Environment Variables");
+    console.error("2. For local: Create .env.local file with NOTION_API_KEY and NOTION_DATABASE_ID");
     return {
       success: false,
       message: "Server configuration error. Please contact support.",
@@ -67,7 +78,11 @@ export async function submitToNotion(
       }
     );
 
-    console.log("Database fetch response status:", dbResponse.status, dbResponse.statusText);
+    console.log(
+      "Database fetch response status:",
+      dbResponse.status,
+      dbResponse.statusText
+    );
 
     if (!dbResponse.ok) {
       const errorData = await dbResponse.json().catch(() => ({}));
@@ -84,18 +99,18 @@ export async function submitToNotion(
 
     const dbData = await dbResponse.json();
     const properties = dbData.properties;
-    
+
     console.log("✅ Database properties fetched:", {
       totalProperties: Object.keys(properties).length,
       propertyNames: Object.keys(properties),
-      propertyDetails: Object.keys(properties).map(key => ({
+      propertyDetails: Object.keys(properties).map((key) => ({
         key,
         type: properties[key].type,
       })),
     });
 
     console.log("🔍 Matching properties...");
-    
+
     // 속성명 찾기 (대소문자 구분 없이 찾기)
     const namePropertyKey = Object.keys(properties).find(
       (key) =>
@@ -240,7 +255,9 @@ export async function submitToNotion(
           };
         } else {
           // 다른 타입이어도 rich_text로 시도 (Notion API는 rich_text를 기본으로 사용)
-          console.warn(`⚠️ Desc property type is "${descProperty.type}", using rich_text format`);
+          console.warn(
+            `⚠️ Desc property type is "${descProperty.type}", using rich_text format`
+          );
           propertiesPayload[descPropertyKey] = {
             rich_text: [
               {
@@ -251,14 +268,20 @@ export async function submitToNotion(
             ],
           };
         }
-        console.log("✅ Desc property set in payload:", propertiesPayload[descPropertyKey]);
+        console.log(
+          "✅ Desc property set in payload:",
+          propertiesPayload[descPropertyKey]
+        );
       } else {
         // desc 속성을 찾지 못한 경우 - 모든 속성 로그 출력
         console.error("❌ Desc property not found!");
-        console.error("Available properties:", Object.keys(properties).map((key) => ({
-          key,
-          type: properties[key].type,
-        })));
+        console.error(
+          "Available properties:",
+          Object.keys(properties).map((key) => ({
+            key,
+            type: properties[key].type,
+          }))
+        );
         console.error("Desc value that should be saved:", desc);
         console.error("This means desc will NOT be saved to Notion DB!");
       }
