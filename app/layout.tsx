@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { Great_Vibes } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const greatVibes = Great_Vibes({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-great-vibes",
-});
+const geist = Geist({ subsets: ["latin"] });
+const geistMono = Geist_Mono({ subsets: ["latin"] });
 
 // Get the base URL from environment variable or use default
 const baseUrl =
@@ -121,11 +118,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${greatVibes.variable} great-vibes-regular antialiased`}
-      >
+      <body className={`font-sans antialiased`}>
         {children}
-        <Analytics />
+        <Analytics
+          mode={
+            process.env.NODE_ENV === "production" ? "production" : "development"
+          }
+          debug={process.env.NODE_ENV === "development"}
+        />
       </body>
     </html>
   );
