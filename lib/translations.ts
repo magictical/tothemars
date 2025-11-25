@@ -137,6 +137,16 @@ export const translations = {
       subtitle: "feat. Elon Musk",
       copyright: "© 2025 Mars Migration Project. All rights reserved.",
     },
+    chat: {
+      title: "Chat with us",
+      placeholder: "Type your message...",
+      send: "Send",
+      sending: "Sending...",
+      error: "Failed to send message. Please try again.",
+      emptyMessage: "Please enter a message.",
+      welcome: "Hello! I'm here to help you learn about the Mars Migration Project. How can I assist you today?",
+      quotaExceeded: "API quota exceeded. Please check your Google AI Studio plan or try again later.",
+    },
   },
   ko: {
     hero: {
@@ -264,6 +274,16 @@ export const translations = {
       title: "화성 이주 프로젝트",
       subtitle: "feat. 일론 머스크",
       copyright: "© 2025 화성 이주 프로젝트. 모든 권리 보유.",
+    },
+    chat: {
+      title: "채팅하기",
+      placeholder: "메시지를 입력하세요...",
+      send: "전송",
+      sending: "전송 중...",
+      error: "메시지 전송에 실패했습니다. 다시 시도해주세요.",
+      emptyMessage: "메시지를 입력해주세요.",
+      welcome: "안녕하세요! 화성 이주 프로젝트에 대해 도움을 드리겠습니다. 무엇을 도와드릴까요?",
+      quotaExceeded: "API 할당량이 초과되었습니다. Google AI Studio에서 계정 설정을 확인하거나 잠시 후 다시 시도해주세요.",
     },
   },
 } as const;

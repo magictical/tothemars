@@ -8,6 +8,7 @@ import { PricingSection } from "@/components/pricing-section";
 import { Footer } from "@/components/footer";
 import { RegistrationModal } from "@/components/registration-modal";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ChatWidget } from "@/components/chat-widget";
 import type { Language } from "@/lib/translations";
 
 export default function LandingPage() {
@@ -34,6 +35,8 @@ export default function LandingPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
+
+      <ChatWidget language={language} />
     </main>
   );
 }

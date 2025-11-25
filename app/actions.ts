@@ -56,8 +56,12 @@ export async function submitToNotion(
       NOTION_DATABASE_ID: !NOTION_DATABASE_ID ? "❌ MISSING" : "✅ SET",
     });
     console.error("Please set environment variables:");
-    console.error("1. For Vercel: Go to Project Settings > Environment Variables");
-    console.error("2. For local: Create .env.local file with NOTION_API_KEY and NOTION_DATABASE_ID");
+    console.error(
+      "1. For Vercel: Go to Project Settings > Environment Variables"
+    );
+    console.error(
+      "2. For local: Create .env.local file with NOTION_API_KEY and NOTION_DATABASE_ID"
+    );
     return {
       success: false,
       message: "Server configuration error. Please contact support.",
@@ -380,6 +384,148 @@ export async function submitToNotion(
     return {
       success: false,
       message: "Network error. Please check your connection and try again.",
+    };
+  }
+}
+
+interface ChatMessage {
+  role: "user" | "model";
+  parts: { text: string }[];
+}
+
+interface ChatResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+export async function chatWithGemini(
+  message: string,
+  history: ChatMessage[] = [],
+  language: "en" | "ko" = "en"
+): Promise<ChatResult> {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+  if (!GEMINI_API_KEY) {
+    console.error("❌ Gemini API key is missing");
+    const errorMessages = {
+      en: "Server configuration error. Please contact support.",
+      ko: "서버 설정 오류입니다. 지원팀에 문의해주세요.",
+    };
+    return {
+      success: false,
+      error: errorMessages[language],
+    };
+  }
+
+  try {
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+
+    // Use Gemini 2.5 Flash model (stable version, not experimental)
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+    });
+
+    // Build chat history - ensure first message is from 'user'
+    let chatHistory = history.length > 0 ? [...history] : [];
+
+    // Remove any leading 'model' messages - Gemini requires first message to be from 'user'
+    while (chatHistory.length > 0 && chatHistory[0].role === "model") {
+      chatHistory.shift();
+    }
+
+    // Start chat session with history
+    const chat = model.startChat({
+      history: chatHistory,
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1024,
+      },
+    });
+
+    // Send message
+    const result = await chat.sendMessage(message);
+    const response = await result.response;
+    const text = response.text();
+
+    return {
+      success: true,
+      message: text,
+    };
+  } catch (error) {
+    console.error("❌ Gemini API error:", error);
+
+    // Error messages based on language
+    const errorMessages = {
+      en: {
+        quotaExceeded:
+          "API quota exceeded. Please check your Google AI Studio plan and billing. The free tier may have daily limits. Try again later or upgrade your plan.",
+        quotaExceededShort:
+          "API quota exceeded. Please check your Google AI Studio account settings or try again later.",
+        modelNotFound:
+          "Model not found. Please check your API key and model settings.",
+        generic: "Failed to get response from AI. Please try again.",
+        serverConfig: "Server configuration error. Please contact support.",
+      },
+      ko: {
+        quotaExceeded:
+          "API 할당량이 초과되었습니다. Google AI Studio에서 플랜과 결제 정보를 확인해주세요. 무료 티어는 일일 제한이 있을 수 있습니다. 나중에 다시 시도하거나 플랜을 업그레이드해주세요.",
+        quotaExceededShort:
+          "API 할당량이 초과되었습니다. Google AI Studio 계정 설정을 확인하거나 잠시 후 다시 시도해주세요.",
+        modelNotFound:
+          "모델을 찾을 수 없습니다. API 키와 모델 설정을 확인해주세요.",
+        generic: "AI 응답을 받는 데 실패했습니다. 다시 시도해주세요.",
+        serverConfig: "서버 설정 오류입니다. 지원팀에 문의해주세요.",
+      },
+    };
+
+    const messages = errorMessages[language];
+
+    // Handle quota exceeded error (429)
+    if (error instanceof Error && error.message.includes("429")) {
+      return {
+        success: false,
+        error: messages.quotaExceeded,
+      };
+    }
+
+    // Handle other errors
+    if (error instanceof Error) {
+      // Check for quota-related errors
+      if (
+        error.message.includes("quota") ||
+        error.message.includes("Quota") ||
+        error.message.includes("exceeded")
+      ) {
+        return {
+          success: false,
+          error: messages.quotaExceededShort,
+        };
+      }
+
+      // Handle model not found error
+      if (
+        error.message.includes("404") ||
+        error.message.includes("not found")
+      ) {
+        return {
+          success: false,
+          error: messages.modelNotFound,
+        };
+      }
+
+      return {
+        success: false,
+        error: error.message || messages.generic,
+      };
+    }
+
+    return {
+      success: false,
+      error: messages.generic,
     };
   }
 }

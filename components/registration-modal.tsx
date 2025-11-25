@@ -40,7 +40,7 @@ export function RegistrationModal({
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
-    
+
     // Log form data before submission
     const formDataObj: Record<string, string> = {};
     formData.forEach((value, key) => {
